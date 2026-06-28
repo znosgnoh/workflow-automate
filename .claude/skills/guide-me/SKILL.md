@@ -2,36 +2,38 @@
 name: guide-me
 description: >-
   Walks new and non-technical users through workflow-automate local setup using
-  Claude Code, including installing Node.js from scratch, downloading the project
-  without GitHub, environment configuration, verification, and optional PR help.
-  Use when the user says guide me, setup help, run locally, first time setup,
-  no github, no node, claude code, new contributor, or references GUIDE.md.
+  the Claude desktop app or Claude Code CLI, including installing Node.js from
+  scratch, downloading the project without GitHub, environment configuration,
+  verification, and optional PR help. Use when the user says guide me, setup
+  help, run locally, claude app, desktop app, first time setup, no github, no
+  node, claude code, new contributor, or references GUIDE.md.
 ---
 
 # Guide Me — Local Setup & Contributing
 
-Help the user complete [GUIDE.md](../../../GUIDE.md). They may use **Claude Code** (not Cursor), may have **no GitHub account**, and may have **no Node.js** yet. Use plain language. Run commands when possible. **Never** commit or expose secrets.
+Help the user complete [GUIDE.md](../../../GUIDE.md). They may use the **Claude desktop app (Code tab, Local mode)**, the **terminal `claude` command**, or both — same skills and config. They may have **no GitHub account** and **no Node.js** yet. Use plain language. Run commands when possible. **Never** commit or expose secrets.
 
 ## First message — ask what they have
 
 Before running anything, learn their situation. Use **AskQuestion** or short conversational questions:
 
 1. **Computer?** (Mac / Windows / Linux)
-2. **Node.js installed?** (`node -v` — if unknown, run it for them)
-3. **Claude Code installed?** (`claude --version`)
-4. **Git installed?** (`git --version`) — optional for running the app
-5. **GitHub account?** — optional for running; needed only for PRs
-6. **Project on disk?** (ZIP unzip path, clone path, or not yet)
-7. **DATABASE_URL?** (Neon or team-provided — block app setup until resolved)
+2. **Using Claude desktop app or terminal?** (Desktop → Code tab → Local is fine)
+3. **Node.js installed?** (`node -v` — if unknown, run it for them)
+4. **Claude Code in terminal?** (`claude --version`) — skip if they only use desktop app
+5. **Git installed?** (`git --version`) — optional for running; required for desktop Local on Windows
+6. **GitHub account?** — optional for running; needed only for PRs
+7. **Project on disk?** (ZIP unzip path, clone path, or not yet)
+8. **DATABASE_URL?** (Neon or team-provided — block app setup until resolved)
 
 Track progress:
 
 ```
 Setup progress:
 - [ ] Node.js 20+ installed
-- [ ] Claude Code installed & logged in
+- [ ] Claude desktop app **or** `claude` CLI available
 - [ ] Project folder on disk (ZIP or git)
-- [ ] cd into project + claude session in project root
+- [ ] Project opened in Claude (desktop Local folder or terminal `cd`)
 - [ ] npm install
 - [ ] .env.local created
 - [ ] DATABASE_URL set

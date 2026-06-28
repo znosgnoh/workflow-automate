@@ -1,18 +1,17 @@
 # Workflow Automate — Local Setup Guide
 
-This guide is for **new users who are not developers**. You can use **Claude Code** (Anthropic’s coding assistant in the terminal) to walk through every step — you do **not** need prior experience with GitHub, Node.js, or the command line.
+This guide is for **new users who are not developers**. You can use the **Claude desktop app** (easiest — no terminal required) or **Claude Code in the terminal** to walk through every step. You do **not** need prior experience with GitHub or Node.js to get started.
 
-**Already in the project folder?** Open a terminal there and run:
+**Already have the project folder?** Pick one:
 
-```bash
-claude
-```
+| Method | What to do |
+|--------|------------|
+| **Claude desktop app** (recommended for beginners) | Open the app → **Code** tab → **Local** → **Select folder** → choose `workflow-automate` → say **Guide me through local setup** |
+| **Terminal** | `cd` into the folder → run `claude` → say **Guide me through local setup** |
 
-Then say:
+Claude will use this project’s **guide-me** skill (in `.claude/skills/`), read `GUIDE.md`, and ask what you’re missing.
 
-> **Guide me through local setup**
-
-Claude will use this project’s **guide-me** skill, ask what you’re missing, and run commands for you when possible.
+> **Note:** The regular [claude.ai](https://claude.ai) **web chat** cannot run commands on your computer. For local project work you need the **Claude desktop app (Code tab)** or the **terminal** `claude` command — both are Claude Code.
 
 ---
 
@@ -35,8 +34,8 @@ You can try the live version without installing anything: [https://workflow-auto
 |-------|-------------------------------|-------------------------------------|
 | Computer + internet | Yes | Yes |
 | **Node.js** | **Yes** | Yes |
-| **Claude Code** | Recommended (your helper) | Recommended |
-| Anthropic account (Pro/Team/API) | For Claude Code | For Claude Code |
+| **Claude desktop app** or **Claude Code (terminal)** | Recommended (your helper) | Recommended |
+| Anthropic account (Pro/Max/Teams/API) | For Claude Code features | For Claude Code features |
 | **GitHub account** | **No** | **Yes** |
 | **Git** | **No** (you can download a ZIP) | **Yes** (easier with Git) |
 | Free **Neon** database account | Yes | Yes |
@@ -75,43 +74,44 @@ npm -v
 
 ---
 
-### 0B — Install Claude Code (recommended)
+### 0B — Install Claude (recommended)
 
-Claude Code is the AI assistant that can read this guide and run setup commands with you.
+Claude can read this guide, edit project files, and run setup commands with you.
 
-**You need a paid Anthropic plan** (Claude Pro, Max, Teams, Enterprise) or API credits. The free Claude.ai chat-only plan does **not** include Claude Code.
+**You need a paid Anthropic plan** (Claude Pro, Max, Teams, Enterprise) or API credits. The free claude.ai chat-only plan does **not** include local coding features.
 
-Pick **one** install method for your computer:
+#### Option 1 — Claude desktop app (best if you dislike the terminal)
 
-#### Mac or Linux (easiest — no Node required for Claude itself)
+1. Download from [https://claude.com/download](https://claude.com/download) (Mac or Windows)  
+2. Install and sign in with your Anthropic account  
+3. Open the **Code** tab (not just regular chat)  
+4. You’ll use **Local** mode and **Select folder** in Phase 2  
+
+Docs: [Claude Code desktop quickstart](https://code.claude.com/docs/en/desktop-quickstart)
+
+> On **Windows**, the desktop app’s **Local** mode needs **Git** installed ([Git for Windows](https://git-scm.com/download/win)). Mac usually includes Git already.
+
+#### Option 2 — Claude Code in the terminal
+
+Pick **one** install method:
+
+**Mac or Linux:**
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
 ```
 
-Then **close and reopen** the terminal.
-
-#### Windows (PowerShell)
-
-Open **PowerShell** (not Command Prompt). Run:
+**Windows (PowerShell):**
 
 ```powershell
 irm https://claude.ai/install.ps1 | iex
 ```
 
-#### Other options
+**Other:** Homebrew `brew install --cask claude-code`, WinGet `winget install Anthropic.ClaudeCode`, or [setup docs](https://code.claude.com/docs/en/setup).
 
-- Mac with Homebrew: `brew install --cask claude-code`  
-- Windows with WinGet: `winget install Anthropic.ClaudeCode`  
-- Docs: [https://code.claude.com/docs/en/setup](https://code.claude.com/docs/en/setup)
+Check: `claude --version` — first run will ask you to log in.
 
-**Check it worked:**
-
-```bash
-claude --version
-```
-
-First time you run `claude`, it will ask you to **log in** to your Anthropic account.
+**Desktop app and terminal share the same project config** — skills in `.claude/skills/`, rules in `.claude/`, and `CLAUDE.MD` work in both.
 
 ---
 
@@ -172,10 +172,27 @@ cd workflow-automate
 
 ---
 
-## Phase 2 — Open the project with Claude Code
+## Phase 2 — Open the project in Claude
+
+### Option A — Claude desktop app (no terminal needed)
+
+1. Open the **Claude** desktop app and sign in  
+2. Click the **Code** tab  
+3. Click **+ New session** (or start a new chat in Code)  
+4. Set **Environment** to **Local** (runs on your computer, not cloud)  
+5. Click **Select folder** and choose your `workflow-automate` folder (the unzipped or cloned directory)  
+6. In the chat box, type:
+
+> Guide me through local setup
+
+Claude can run terminal commands inside the app, edit files, and walk through the rest of this guide.
+
+**If Local mode is greyed out on Windows:** install [Git for Windows](https://git-scm.com/download/win) and restart the app.
+
+### Option B — Terminal (`claude` command)
 
 1. Open **Terminal** (Mac/Linux) or **PowerShell** (Windows)  
-2. Go into the project folder (change the path to match yours):
+2. Go into the project folder:
 
 ```bash
 cd ~/Documents/workflow-automate
@@ -193,13 +210,11 @@ cd C:\Users\YourName\Documents\workflow-automate
 claude
 ```
 
-4. Tell Claude:
+4. Say: **Guide me through local setup**
 
-> Guide me through local setup
+Both options use the same **guide-me** skill and project rules. You can switch between desktop and terminal on the same folder.
 
-Claude will read this file and the **guide-me** skill, check what’s installed, and ask for anything missing (like your database connection).
-
-**Tip:** You can also ask in plain English: *“I don’t have Node installed yet”* or *“Help me create the .env.local file.”*
+**Tips:** Ask in plain English — *“I don’t have Node installed yet”* or *“Help me create the .env.local file.”*
 
 ---
 
@@ -412,7 +427,7 @@ Create branch → Edit files → Commit → Push → Open PR on GitHub → Revie
 
 ---
 
-## What to say to Claude Code
+## What to say to Claude (desktop app or terminal)
 
 | Goal | Example message |
 |------|-----------------|
