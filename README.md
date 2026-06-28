@@ -2,6 +2,8 @@
 
 Personal Next.js hub for daily automation workflows — starting with a Costco product search pipeline that exports Excel reports and updates PowerPoint slides.
 
+**New here?** See **[GUIDE.md](./GUIDE.md)** for step-by-step local setup (written for non-developers using **Claude Code** — no GitHub or Node.js required to start). In the project folder, run `claude` and say **“Guide me through local setup”**.
+
 ## Quick start
 
 ```bash
