@@ -1,12 +1,25 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils/cn";
+import { Badge } from "@/components/ui/badge";
+import { buttonStyles } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  formatRelativeTime,
+  formatRunStatusLabel,
+} from "@/lib/utils/format";
+
+type WorkflowLastRun = {
+  searchTerm: string;
+  status: string;
+  createdAt: Date;
+};
 
 type WorkflowCardProps = {
   id: string;
   name: string;
   description: string;
   href: string;
-  lastRunLabel?: string;
+  lastRun?: WorkflowLastRun | null;
 };
 
 export function WorkflowCard({
@@ -14,33 +27,52 @@ export function WorkflowCard({
   name,
   description,
   href,
-  lastRunLabel = "No runs yet",
+  lastRun = null,
 }: WorkflowCardProps) {
   return (
-    <article
+    <Card
       id={id}
-      className={cn(
-        "flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow",
-        "hover:shadow-md",
-      )}
+      className="flex h-full flex-col transition-shadow hover:shadow-md"
     >
-      <div className="flex-1 space-y-2">
-        <h3 className="text-lg font-semibold text-foreground">{name}</h3>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-lg font-semibold text-foreground">{name}</h3>
+          {lastRun ? <StatusBadge status={lastRun.status} /> : null}
+        </div>
         <p className="text-sm leading-relaxed text-muted">{description}</p>
-      </div>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-muted">{lastRunLabel}</p>
-        <Link
-          href={href}
-          className={cn(
-            "inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors",
-            "hover:bg-accent-hover",
-            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-          )}
-        >
+      </CardHeader>
+
+      <CardContent className="flex-1">
+        {lastRun ? (
+          <dl className="space-y-1 text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <dt className="text-muted">Last search</dt>
+              <dd className="font-medium text-foreground">
+                &ldquo;{lastRun.searchTerm}&rdquo;
+              </dd>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <dt className="text-muted">Started</dt>
+              <dd className="text-foreground">
+                {formatRelativeTime(lastRun.createdAt)}
+              </dd>
+            </div>
+          </dl>
+        ) : (
+          <Badge variant="pending">No runs yet</Badge>
+        )}
+      </CardContent>
+
+      <CardFooter className="justify-between">
+        <p className="text-xs text-muted">
+          {lastRun
+            ? `Status: ${formatRunStatusLabel(lastRun.status)}`
+            : "Run your first report to see activity here."}
+        </p>
+        <Link href={href} className={buttonStyles({ variant: "primary" })}>
           Open workflow
         </Link>
-      </div>
-    </article>
+      </CardFooter>
+    </Card>
   );
 }

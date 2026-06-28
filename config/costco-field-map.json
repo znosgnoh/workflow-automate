@@ -1,0 +1,9 @@
+{
+  "productName": "title",
+  "originalPrice": "originalPrice",
+  "promotionalPrice": "promotionalPrice",
+  "manufacturer": "manufacturer",
+  "expiryDate": "expiryDate",
+  "sku": "sku",
+  "category": "category"
+}

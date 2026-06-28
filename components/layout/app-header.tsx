@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils/cn";
 const navLinks = [
   { href: "/", label: "Dashboard" },
   { href: "/workflows/costco", label: "Costco Report" },
+  { href: "/workflows/costco/history", label: "History" },
 ] as const;
 
 export function AppHeader() {

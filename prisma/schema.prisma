@@ -27,6 +27,7 @@ model WorkflowRun {
   currentStep  String?
   error        String?
   productCount Int?
+  products     Json?
   createdAt    DateTime     @default(now())
   completedAt  DateTime?
   artifacts    Artifact[]
