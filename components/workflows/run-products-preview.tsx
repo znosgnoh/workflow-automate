@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ProductPivotView } from "@/components/workflows/product-pivot-view";
 import type { StoredProduct } from "@/lib/jobs/product-storage";
 
 const PAGE_SIZE = 15;
@@ -48,11 +49,14 @@ function compareProducts(
   return direction === "asc" ? leftNumber - rightNumber : rightNumber - leftNumber;
 }
 
+type PreviewView = "pivot" | "table";
+
 type RunProductsPreviewProps = {
   products: StoredProduct[];
 };
 
 export function RunProductsPreview({ products }: RunProductsPreviewProps) {
+  const [view, setView] = useState<PreviewView>("pivot");
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>("promotionalPrice");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -88,12 +92,65 @@ export function RunProductsPreview({ products }: RunProductsPreviewProps) {
     );
   }
 
+  if (view === "pivot") {
+    return (
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-sm font-medium text-foreground">Product review</h3>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="primary"
+              aria-pressed
+            >
+              Pivot chart
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setView("table")}
+              aria-pressed={false}
+            >
+              All products
+            </Button>
+          </div>
+        </div>
+        <ProductPivotView products={products} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-sm font-medium text-foreground">Product review</h3>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setView("pivot")}
+            aria-pressed={false}
+          >
+            Pivot chart
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="primary"
+            aria-pressed
+          >
+            All products
+          </Button>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-sm font-medium text-foreground">
-          Product preview ({products.length})
-        </h3>
+        <p className="text-sm text-muted">
+          Flat list ({products.length} products)
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <label htmlFor="product-sort" className="text-xs text-muted">
             Sort by

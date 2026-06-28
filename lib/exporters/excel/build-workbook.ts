@@ -1,14 +1,27 @@
 import ExcelJS from "exceljs";
 import type { CanonicalProduct } from "@/lib/validations/product";
 import { buildExcelFilename } from "@/lib/utils/filename";
+import { DATA_SHEET_NAME } from "@/lib/exporters/excel/data-sheet-columns";
 import { renderSummaryColumnChartPng } from "@/lib/exporters/excel/chart-image";
 import {
   aggregateProductsForSummary,
   DEFAULT_COSTCO_SUMMARY_CONFIG,
   type CostcoSummaryConfig,
 } from "@/lib/exporters/excel/summary-config";
+import {
+  addPivotSheet,
+  DEFAULT_COSTCO_PIVOT_CONFIG,
+  type CostcoPivotConfig,
+} from "@/lib/exporters/excel/pivot-sheet";
+import {
+  countIfGroupFormula,
+  sumIfGroupFormula,
+} from "@/lib/exporters/excel/sheet-formulas";
+import {
+  buildProductPivot,
+  getPivotGroupHeader,
+} from "@/lib/pivot/product-pivot";
 
-const DATA_SHEET_NAME = "Data";
 const SUMMARY_SHEET_NAME = "Summary";
 
 const DATA_COLUMNS = [
@@ -30,6 +43,7 @@ export type BuildWorkbookOptions = {
   searchTerm: string;
   generatedAt?: Date;
   summaryConfig?: CostcoSummaryConfig;
+  pivotConfig?: CostcoPivotConfig;
 };
 
 export type BuildWorkbookResult = {
@@ -45,6 +59,11 @@ function styleHeaderRow(sheet: ExcelJS.Worksheet) {
   sheet.views = [{ state: "frozen", ySplit: 1 }];
 }
 
+function normalizeDataLabel(value: string | null, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : fallback;
+}
+
 function addDataSheet(workbook: ExcelJS.Workbook, products: CanonicalProduct[]) {
   const sheet = workbook.addWorksheet(DATA_SHEET_NAME);
   sheet.columns = DATA_COLUMNS.map((column) => ({ ...column }));
@@ -52,13 +71,16 @@ function addDataSheet(workbook: ExcelJS.Workbook, products: CanonicalProduct[]) 
   for (const product of products) {
     sheet.addRow({
       productName: product.productName,
-      link: product.link,
-      originalPrice: product.originalPrice,
-      promotionalPrice: product.promotionalPrice,
-      manufacturer: product.manufacturer,
-      expiryDate: product.expiryDate,
-      sku: product.sku,
-      category: product.category,
+      link: product.link ?? "",
+      originalPrice: product.originalPrice ?? undefined,
+      promotionalPrice: product.promotionalPrice ?? undefined,
+      manufacturer: normalizeDataLabel(
+        product.manufacturer,
+        "(Unknown manufacturer)",
+      ),
+      expiryDate: product.expiryDate ?? undefined,
+      sku: product.sku ?? "",
+      category: normalizeDataLabel(product.category, "(Uncategorized)"),
     });
   }
 
@@ -84,26 +106,41 @@ function addSummarySheet(
   summaryConfig: CostcoSummaryConfig,
 ) {
   const sheet = workbook.addWorksheet(SUMMARY_SHEET_NAME);
+  const pivotRows = buildProductPivot(products, summaryConfig.groupBy);
   const summaryRows = aggregateProductsForSummary(products, summaryConfig);
+  const groupHeader = getPivotGroupHeader(summaryConfig.groupBy);
+  const productCount = products.length;
+  const sumField =
+    summaryConfig.sumField === "promotionalPrice"
+      ? "promotionalPrice"
+      : "originalPrice";
 
-  if (summaryRows.length === 0) {
+  if (pivotRows.length === 0) {
     sheet.addRow(["No data available for this search."]);
     sheet.getCell("A1").font = { italic: true };
     return sheet;
   }
 
-  const groupHeader =
-    summaryConfig.groupBy === "category" ? "Category" : "Manufacturer";
-
   sheet.addRow([groupHeader, summaryConfig.countLabel, summaryConfig.sumLabel]);
   styleHeaderRow(sheet);
 
-  for (const row of summaryRows) {
-    const excelRow = sheet.addRow([
-      row.groupLabel,
-      row.productCount,
-      row.sumValue,
-    ]);
+  for (const row of pivotRows) {
+    const excelRowNumber = sheet.rowCount + 1;
+    const groupCell = `$A$${excelRowNumber}`;
+    sheet.addRow([row.groupLabel]);
+    const excelRow = sheet.getRow(excelRowNumber);
+
+    excelRow.getCell(2).value = {
+      formula: countIfGroupFormula(summaryConfig.groupBy, groupCell, productCount),
+    };
+    excelRow.getCell(3).value = {
+      formula: sumIfGroupFormula(
+        summaryConfig.groupBy,
+        groupCell,
+        sumField,
+        productCount,
+      ),
+    };
     excelRow.getCell(3).numFmt = CURRENCY_NUM_FMT;
   }
 
@@ -137,12 +174,14 @@ export async function buildCostcoProductReportWorkbook(
 ): Promise<BuildWorkbookResult> {
   const generatedAt = options.generatedAt ?? new Date();
   const summaryConfig = options.summaryConfig ?? DEFAULT_COSTCO_SUMMARY_CONFIG;
+  const pivotConfig = options.pivotConfig ?? DEFAULT_COSTCO_PIVOT_CONFIG;
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "workflow-automate";
   workbook.created = generatedAt;
 
   addDataSheet(workbook, options.products);
   addSummarySheet(workbook, options.products, summaryConfig);
+  addPivotSheet(workbook, options.products, pivotConfig);
 
   const arrayBuffer = await workbook.xlsx.writeBuffer();
   const buffer = Buffer.from(arrayBuffer);

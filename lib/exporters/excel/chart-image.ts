@@ -1,5 +1,7 @@
 import { PNG } from "pngjs";
 import type { SummaryRow } from "@/lib/exporters/excel/summary-config";
+import type { PivotChartMetric, ProductPivotRow } from "@/lib/pivot/product-pivot";
+import { getPivotChartValue } from "@/lib/pivot/product-pivot";
 
 const CHART_WIDTH = 720;
 const CHART_HEIGHT = 420;
@@ -49,11 +51,47 @@ function fillRect(
   }
 }
 
-/** Renders a simple column chart PNG for embedding in the Summary sheet. */
-export function renderSummaryColumnChartPng(rows: SummaryRow[]): Buffer | null {
+/** Renders a column chart PNG for the Summary sheet. */
+export function renderSummaryColumnChartPng(
+  rows: SummaryRow[],
+): Buffer | null {
   if (rows.length === 0) {
     return null;
   }
+
+  return renderColumnChartPng(
+    rows.map((row) => ({
+      label: row.groupLabel,
+      value: row.sumValue,
+    })),
+  );
+}
+
+/** Renders a column chart PNG for the Pivot sheet. */
+export function renderPivotColumnChartPng(
+  rows: ProductPivotRow[],
+  metric: PivotChartMetric,
+): Buffer | null {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return renderColumnChartPng(
+    rows.map((row) => ({
+      label: row.groupLabel,
+      value: getPivotChartValue(row, metric),
+    })),
+  );
+}
+
+function renderColumnChartPng(
+  points: Array<{ label: string; value: number }>,
+): Buffer | null {
+  if (points.length === 0) {
+    return null;
+  }
+
+  const rows = points;
 
   const png = new PNG({ width: CHART_WIDTH, height: CHART_HEIGHT });
 
@@ -92,13 +130,13 @@ export function renderSummaryColumnChartPng(rows: SummaryRow[]): Buffer | null {
     AXIS_COLOR,
   );
 
-  const maxCount = Math.max(...rows.map((row) => row.productCount), 1);
+  const maxCount = Math.max(...rows.map((row) => row.value), 1);
   const barCount = rows.length;
   const totalGap = BAR_GAP * (barCount + 1);
   const barWidth = Math.max(12, Math.floor((plotWidth - totalGap) / barCount));
 
   rows.forEach((row, index) => {
-    const barHeight = Math.round((row.productCount / maxCount) * plotHeight);
+    const barHeight = Math.round((row.value / maxCount) * plotHeight);
     const x = plotLeft + BAR_GAP + index * (barWidth + BAR_GAP);
     const y = plotBottom - barHeight;
     fillRect(
