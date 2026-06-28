@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RunStatus {
+  pending
+  running
+  completed
+  failed
+}
+
+enum ArtifactType {
+  xlsx
+  pptx
+}
+
+model WorkflowRun {
+  id           String       @id @default(cuid())
+  workflowId   String
+  searchTerm   String
+  status       RunStatus    @default(pending)
+  currentStep  String?
+  error        String?
+  productCount Int?
+  createdAt    DateTime     @default(now())
+  completedAt  DateTime?
+  artifacts    Artifact[]
+
+  @@index([workflowId, createdAt(sort: Desc)])
+  @@index([status])
+}
+
+model Artifact {
+  id        String       @id @default(cuid())
+  runId     String
+  run       WorkflowRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  type      ArtifactType
+  url       String
+  filename  String
+  createdAt DateTime     @default(now())
+
+  @@index([runId])
+}
