@@ -1,4 +1,4 @@
-export { getArtifactMimeType, getStorageMode } from "@/lib/storage/config";
+export { assertBlobStorageAvailable, getArtifactMimeType, getStorageMode } from "@/lib/storage/config";
 export type { StorageMode } from "@/lib/storage/config";
 export {
   storeRunArtifact,

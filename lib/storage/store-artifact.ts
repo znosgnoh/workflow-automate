@@ -1,7 +1,7 @@
 import { ArtifactType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { uploadArtifactToBlob } from "@/lib/storage/blob";
-import { getStorageMode } from "@/lib/storage/config";
+import { assertBlobStorageAvailable, getStorageMode } from "@/lib/storage/config";
 import { writeLocalArtifact } from "@/lib/storage/local";
 
 type StoreRunArtifactInput = {
@@ -20,6 +20,7 @@ export async function storeRunArtifact({
   const storageMode = getStorageMode();
 
   if (storageMode === "blob") {
+    assertBlobStorageAvailable();
     const pathname = `workflow-runs/${runId}/${filename}`;
     const url = await uploadArtifactToBlob({
       pathname,
