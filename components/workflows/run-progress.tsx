@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { buttonStyles } from "@/components/ui/button";
-import { RunProgressSkeleton } from "@/components/ui/skeleton";
+import { RunProgressSkeleton, RunResultsSkeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ArtifactDownloadLinks } from "@/components/workflows/artifact-download-links";
 import { RunProductsPreview } from "@/components/workflows/run-products-preview";
@@ -42,9 +42,8 @@ export function RunProgress({ runId }: RunProgressProps) {
 
   useEffect(() => {
     let cancelled = false;
-    let intervalId: ReturnType<typeof setInterval> | undefined;
 
-    async function fetchRun() {
+    async function fetchRun(): Promise<boolean> {
       try {
         const response = await fetch(`/api/runs/${runId}`, {
           cache: "no-store",
@@ -53,7 +52,7 @@ export function RunProgress({ runId }: RunProgressProps) {
         if (!response.ok) {
           if (response.status === 404) {
             setLoadError("Run not found.");
-            return;
+            return true;
           }
           throw new Error("Failed to load run status");
         }
@@ -75,24 +74,31 @@ export function RunProgress({ runId }: RunProgressProps) {
             );
           }
 
-          if (data.status === "completed" || data.status === "failed") {
-            if (intervalId !== undefined) {
-              clearInterval(intervalId);
-              intervalId = undefined;
-            }
-          }
+          return data.status === "completed" || data.status === "failed";
         }
       } catch {
         if (!cancelled) {
           setLoadError("Could not load run status.");
         }
       }
+
+      return false;
     }
 
-    void fetchRun();
+    async function poll() {
+      const isTerminal = await fetchRun();
+      if (isTerminal && intervalId !== undefined) {
+        clearInterval(intervalId);
+        intervalId = undefined;
+      }
+    }
+
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+
+    void poll();
     intervalId = setInterval(() => {
-      void fetchRun();
-    }, 2500);
+      void poll();
+    }, 1000);
 
     return () => {
       cancelled = true;
@@ -109,6 +115,8 @@ export function RunProgress({ runId }: RunProgressProps) {
 
     return getActiveStepIndex(run.status, run.currentStep);
   }, [run]);
+
+  const isRunActive = run?.status === "pending" || run?.status === "running";
 
   if (loadError) {
     return (
@@ -157,7 +165,11 @@ export function RunProgress({ runId }: RunProgressProps) {
           const isComplete =
             run.status === "completed" || index < activeIndex;
           const isCurrent =
-            run.status === "running" && run.currentStep === step;
+            run.status !== "completed" &&
+            run.status !== "failed" &&
+            index === activeIndex &&
+            (run.status === "pending" ||
+              (run.status === "running" && run.currentStep === step));
           const stepLabel = getJobStepLabel(step);
 
           return (
@@ -217,6 +229,8 @@ export function RunProgress({ runId }: RunProgressProps) {
           </Link>
         </div>
       ) : null}
+
+      {isRunActive ? <RunResultsSkeleton /> : null}
 
       {run.status === "completed" ? (
         <div className="space-y-4">

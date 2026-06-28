@@ -1,28 +1,30 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { CostcoSearchForm } from "@/components/workflows/costco-search-form";
-import { RunProgress } from "@/components/workflows/run-progress";
+import { CostcoWorkflowWorkspace } from "@/components/workflows/costco-workflow-workspace";
 import { RunProgressSkeleton } from "@/components/ui/skeleton";
 
 type CostcoWorkflowPageProps = {
   searchParams: Promise<{ runId?: string }>;
 };
 
-function SearchFormFallback() {
+function WorkspaceFallback() {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <p className="text-sm text-muted">Loading search form…</p>
-      </CardContent>
-    </Card>
+    <div className="space-y-8">
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted">Loading search form…</p>
+        </CardContent>
+      </Card>
+      <RunProgressSkeleton />
+    </div>
   );
 }
 
 export default async function CostcoWorkflowPage({
   searchParams,
 }: CostcoWorkflowPageProps) {
-  const { runId } = await searchParams;
+  await searchParams;
 
   return (
     <div className="space-y-8">
@@ -52,23 +54,9 @@ export default async function CostcoWorkflowPage({
         </Link>
       </header>
 
-      <Suspense fallback={<SearchFormFallback />}>
-        <CostcoSearchForm />
+      <Suspense fallback={<WorkspaceFallback />}>
+        <CostcoWorkflowWorkspace />
       </Suspense>
-
-      {runId ? (
-        <Suspense fallback={<RunProgressSkeleton />}>
-          <RunProgress runId={runId} />
-        </Suspense>
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted">
-              Submit a search term above to start a new report run.
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

@@ -113,6 +113,7 @@ export async function processRun(runId: string) {
         status: RunStatus.failed,
         error: message,
         currentStep: null,
+        completedAt: new Date(),
       },
     });
   }

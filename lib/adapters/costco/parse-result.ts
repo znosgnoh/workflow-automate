@@ -27,6 +27,21 @@ function warehousePriceKey(warehouseId: string, field: string) {
   return `inventory(${warehouseId}, ${field})`;
 }
 
+export function normalizeCostcoProductUrl(
+  uri: string | null | undefined,
+): string | null {
+  if (!uri?.trim()) {
+    return null;
+  }
+
+  const trimmed = uri.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  return `https://www.costco.com${trimmed.startsWith("/") ? trimmed : `/${trimmed}`}`;
+}
+
 export function parseCostcoSearchResult(
   item: CostcoSearchResultItem,
   warehouseId: string,
@@ -72,7 +87,7 @@ export function parseCostcoSearchResult(
     promotionalPrice,
     expiryDate: null,
     promotionText: firstString(onlinePromoText),
-    productUrl: product.uri ?? null,
+    productUrl: normalizeCostcoProductUrl(product.uri),
     warehouseAvailability: firstString(
       rollupKey(rollup, warehousePriceKey(warehouseId, "attributes.availability")),
     ),

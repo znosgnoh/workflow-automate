@@ -13,6 +13,7 @@ const SUMMARY_SHEET_NAME = "Summary";
 
 const DATA_COLUMNS = [
   { header: "Product Name", key: "productName", width: 42 },
+  { header: "Link", key: "link", width: 48 },
   { header: "Original Price", key: "originalPrice", width: 16 },
   { header: "Promotional Price", key: "promotionalPrice", width: 18 },
   { header: "Manufacturer", key: "manufacturer", width: 24 },
@@ -51,6 +52,7 @@ function addDataSheet(workbook: ExcelJS.Workbook, products: CanonicalProduct[]) 
   for (const product of products) {
     sheet.addRow({
       productName: product.productName,
+      link: product.link,
       originalPrice: product.originalPrice,
       promotionalPrice: product.promotionalPrice,
       manufacturer: product.manufacturer,

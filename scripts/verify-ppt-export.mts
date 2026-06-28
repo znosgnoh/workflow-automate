@@ -14,6 +14,7 @@ function sampleProducts(count: number): CanonicalProduct[] {
     expiryDate: null,
     sku: `SKU-${1000 + index}`,
     category: categories[index % categories.length] ?? "Other",
+    link: `https://www.costco.com/p/-/sample-product-${index + 1}`,
   }));
 }
 

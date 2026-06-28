@@ -20,10 +20,18 @@ export function getActiveStepIndex(
     return JOB_STEPS.length;
   }
 
-  if (!currentStep) {
+  if (status === "failed") {
     return -1;
   }
 
+  if (status === "pending") {
+    return 0;
+  }
+
+  if (!currentStep) {
+    return 0;
+  }
+
   const index = JOB_STEPS.indexOf(currentStep as JobStep);
-  return index === -1 ? -1 : index;
+  return index === -1 ? 0 : index;
 }

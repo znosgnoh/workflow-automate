@@ -26,6 +26,7 @@ export function mapCostcoProducts(
       expiryDate: raw.expiryDate,
       sku: raw.sku,
       category: raw.category,
+      link: raw.productUrl,
     };
 
     const parsed = canonicalProductSchema.safeParse(candidate);

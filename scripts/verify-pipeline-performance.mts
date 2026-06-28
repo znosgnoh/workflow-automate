@@ -16,6 +16,7 @@ function buildMockProducts(count: number): CanonicalProduct[] {
     expiryDate: null,
     sku: `SKU-${1000 + index}`,
     category: categories[index % categories.length] ?? "Other",
+    link: `https://www.costco.com/p/-/benchmark-product-${index + 1}`,
   }));
 }
 

@@ -12,7 +12,11 @@ import { InputField } from "@/components/ui/input";
 
 type ActiveRunStatus = "pending" | "running" | "completed" | "failed" | null;
 
-export function CostcoSearchForm() {
+type CostcoSearchFormProps = {
+  onRunCreated?: (runId: string) => void;
+};
+
+export function CostcoSearchForm({ onRunCreated }: CostcoSearchFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeRunId = searchParams.get("runId");
@@ -23,7 +27,9 @@ export function CostcoSearchForm() {
   >({});
   const [isPending, startTransition] = useTransition();
 
-  const activeRunStatus = activeRunId ? runStatuses[activeRunId] ?? null : null;
+  const activeRunStatus = activeRunId
+    ? (runStatuses[activeRunId] ?? "pending")
+    : null;
 
   useEffect(() => {
     if (!activeRunId) {
@@ -66,7 +72,7 @@ export function CostcoSearchForm() {
     void fetchActiveRunStatus();
     intervalId = setInterval(() => {
       void fetchActiveRunStatus();
-    }, 2500);
+    }, 1000);
 
     return () => {
       cancelled = true;
@@ -94,8 +100,16 @@ export function CostcoSearchForm() {
         return;
       }
 
-      router.push(`/workflows/costco?runId=${result.runId}`);
-      router.refresh();
+      setRunStatuses((current) => ({
+        ...current,
+        [result.runId]: "pending",
+      }));
+
+      if (onRunCreated) {
+        onRunCreated(result.runId);
+      } else {
+        router.push(`/workflows/costco?runId=${result.runId}`);
+      }
     });
   }
 

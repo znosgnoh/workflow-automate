@@ -12,9 +12,23 @@ import type {
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 750;
+const REQUEST_TIMEOUT_MS = 45_000;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = REQUEST_TIMEOUT_MS,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  return fetch(url, { ...init, signal: controller.signal }).finally(() => {
+    clearTimeout(timeoutId);
+  });
 }
 
 export class CostcoApiClient implements CostcoProductSource {
@@ -26,7 +40,7 @@ export class CostcoApiClient implements CostcoProductSource {
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
       try {
-        const response = await fetch(config.apiUrl, {
+        const response = await fetchWithTimeout(config.apiUrl, {
           method: "POST",
           headers: {
             Accept: "*/*",
@@ -59,7 +73,11 @@ export class CostcoApiClient implements CostcoProductSource {
         );
       } catch (error) {
         lastError =
-          error instanceof Error ? error : new Error("Costco API request failed");
+          error instanceof Error && error.name === "AbortError"
+            ? new Error("Costco API request timed out after 45 seconds")
+            : error instanceof Error
+              ? error
+              : new Error("Costco API request failed");
 
         if (attempt < MAX_RETRIES) {
           await sleep(RETRY_DELAY_MS * (attempt + 1));

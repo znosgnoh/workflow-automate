@@ -8,6 +8,7 @@ export const canonicalProductSchema = z.object({
   expiryDate: z.coerce.date().nullable(),
   sku: z.string().nullable(),
   category: z.string().nullable(),
+  link: z.string().url().nullable(),
 });
 
 export type CanonicalProduct = z.infer<typeof canonicalProductSchema>;
